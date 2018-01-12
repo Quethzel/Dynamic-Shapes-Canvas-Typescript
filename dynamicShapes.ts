@@ -1,55 +1,3 @@
-class Square {
-    cooX: number;
-    cooY: number;
-    width: number;
-    heigth: number;
-
-    constructor(x: number, y: number, width: number, heigth: number) {
-        this.cooX = x;
-        this.cooY = y;
-        this.width = width;
-        this.heigth = heigth;
-    }
-}
-
-class Circle {
-    cooX: number;
-    cooY: number;
-    radio: number;
-
-    constructor(x: number, y: number, radio: number) {
-        this.cooX = x;
-        this.cooY = y;
-        this.radio = radio;
-    }
-}
-
-class Triangle {
-    side: number;
-    heigth: number;
-
-    constructor( side: number) {
-        this.side = side;
-        this.heigth = side * (Math.sqrt(3)/2);
-    }
-}
-
-class Star {
-    cooX: number;
-    cooY: number;
-    spikes: number;
-    outerR: number;
-    innerR: number;
-
-    constructor(x: number, y: number, spikes: number, outerRadio: number, innerRadio: number) {
-        this.cooX = x;
-        this.cooY = y;
-        this.spikes = spikes;
-        this.outerR = outerRadio;
-        this.innerR = innerRadio;
-    }
-}
-
 let colors = [
     { stroke: "#FFAB00", fill: "#C67C00", name: "Amber" },
 	{ stroke: "#D50000", fill: "#9B0000", name: "Red" },
@@ -80,9 +28,39 @@ class Shape {
         this.color = this._getColor();
     }
 
-    _getColor() {
+    private _getColor() {
         let c = colors[Math.floor(Math.random() * colors.length)];
         return new Color(c.fill, c.stroke, c.name);
+    }
+}
+
+class Circle extends Shape {
+    constructor(xCoo: number, yCoo: number, radio: number) { 
+        super("circle", {x: xCoo, y: yCoo, r:radio});
+    }
+}
+
+class Square extends Shape {
+    constructor(xCoo: number, yCoo: number, width: number, heigth: number) {
+        super("square", {x: xCoo, y: yCoo, w: width, h: heigth});
+    }
+}
+
+class Triangle extends Shape {
+    constructor(side: number) {
+        super( "eqTriangle", {s: side, h: side * (Math.sqrt(3)/2)} );
+    }
+}
+
+class Star extends Shape {
+    constructor(xCoo: number, yCoo: number, spikes: number, outerR: number, innerR: number) {
+        super("star", {
+            x: xCoo,
+            y: yCoo,
+            spikes: spikes,
+            outerR: outerR,
+            innerR: innerR
+        });
     }
 }
 
@@ -100,27 +78,26 @@ class Stage {
         this.cooY = this.canvas.height / 2;
     }
 
-     _drawCircle(circle: Circle) {
+     private _drawCircle(circle: Circle) {
          let path = new Path2D();
-         path.arc(circle.cooX, circle.cooY, circle.radio, 0, Math.PI * 2);
+         path.arc(circle.obj.x, circle.obj.y, circle.obj.r, 0, Math.PI * 2);
          return path;
     }
 
-    _drawSquare(square: Square) {
+    private _drawSquare(square: Square) {
         let path = new Path2D();
-        path.rect(square.cooX, square.cooY, square.width, square.heigth);
+        path.rect(square.obj.x, square.obj.y, square.obj.w, square.obj.h);
         return path;
     }
 
-    _drawTriangle(triangle: Triangle) {
-        
+    private _drawTriangle(triangle: Triangle) {  
         this.ctx.save();
 		this.ctx.beginPath();
 		this.ctx.translate(this.canvas.width/2, this.canvas.height/2);
-		this.ctx.moveTo(0, - triangle.heigth / 2);
-		this.ctx.lineTo(- triangle.side / 2, triangle.heigth / 2);
-		this.ctx.lineTo(triangle.side / 2, triangle.heigth / 2);
-		this.ctx.lineTo(0, - triangle.heigth / 2);
+		this.ctx.moveTo(0, - triangle.obj.h / 2);
+		this.ctx.lineTo(- triangle.obj.s / 2, triangle.obj.h / 2);
+		this.ctx.lineTo(triangle.obj.s / 2, triangle.obj.h / 2);
+		this.ctx.lineTo(0, - triangle.obj.h / 2);
         this.ctx.lineWidth = this.lineWidth;
 		this.ctx.fill();
 		this.ctx.stroke();
@@ -128,62 +105,56 @@ class Stage {
         this.ctx.restore();
     }
 
-    _drawStar(star: Star) {
+    private _drawStar(star: Star) {
     	let rot = Math.PI / 2 * 3;
-		let step = Math.PI /star.spikes;
-		let x = star.cooX;
-		let y = star.cooY;
+		let step = Math.PI /star.obj.spikes;
+		let x = star.obj.x;
+		let y = star.obj.y;
 
 		this.ctx.save();
-		this.ctx.strokeStyle = "#FFAB00";
+		this.ctx.strokeStyle = star.color.stroke;
 		this.ctx.beginPath();
-	    this.ctx.moveTo(star.cooX, star.cooY - star.outerR)
-	    for (let i = 0; i < star.spikes; i++) {
-	        x = star.cooX + Math.cos(rot) * star.outerR;
-	        y = star.cooY + Math.sin(rot) * star.outerR;
+	    this.ctx.moveTo(star.obj.x, star.obj.y - star.obj.outerR)
+	    for (let i = 0; i < star.obj.spikes; i++) {
+	        x = star.obj.x + Math.cos(rot) * star.obj.outerR;
+	        y = star.obj.y + Math.sin(rot) * star.obj.outerR;
 	        this.ctx.lineTo(x, y)
 	        rot += step
 
-	        x = star.cooX + Math.cos(rot) * star.innerR;
-	        y = star.cooY + Math.sin(rot) * star.innerR;
+	        x = star.obj.x + Math.cos(rot) * star.obj.innerR;
+	        y = star.obj.y + Math.sin(rot) * star.obj.innerR;
 	        this.ctx.lineTo(x, y)
 	        rot += step
 	    }
-	    this.ctx.lineTo(star.cooX, star.cooY - star.outerR)
+	    this.ctx.lineTo(star.obj.x, star.obj.y - star.obj.outerR)
     	this.ctx.closePath();    
     	this.ctx.lineWidth = this.lineWidth;
-    	this.ctx.strokeStyle = "#FFAB00";
+    	this.ctx.strokeStyle = star.color.stroke;
     	this.ctx.stroke();
-    	this.ctx.fillStyle = "#C67C00";
+    	this.ctx.fillStyle = star.color.fill;
     	this.ctx.fill();
     	this.ctx.restore();
 	}
 
-    _clear() {
-        if(this.ctx != null) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        }
-    }
-
-    draw(shape) {
+    public draw(shape) {
         this._clear();
 
         if(shape.type == "circle") {
-            shape.path = this._drawCircle(shape.obj);
+            shape.path = this._drawCircle(shape);
         }
 
         if(shape.type == "square") {
-            shape.path = this._drawSquare(shape.obj);
+            shape.path = this._drawSquare(shape);
         }
 
         if(shape.type == "eqTriangle") {
             this.ctx.fillStyle = shape.color.fill;
             this.ctx.strokeStyle = shape.color.stroke;            
-            this._drawTriangle(shape.obj);
+            this._drawTriangle(shape);
         }
 
         if(shape.type == "star") {
-            this._drawStar(shape.obj);
+            this._drawStar(shape);
         }
 
         if(shape.type != "eqTriangle" && shape.type != "star") {
@@ -197,5 +168,30 @@ class Stage {
         }
     }
 
+    private _clear() {
+        if(this.ctx != null) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+    }
+
+    public genRandomShape() {
+        let seed = Math.floor(Math.random() * 4);
+        let s = null;
+        switch(seed) {
+            case 0:
+                s = new Circle(this.cooX, this.cooY, 80);
+                break;
+            case 1: 
+                s = new Square(this.canvas.width - 180, this.canvas.height - 180, 150, 150);
+                break;
+            case 2: 
+                s = new Triangle(180);
+                break;
+            case 3: 
+                s = new Star(100, 100, 5, 80, 40);
+                break;
+        }
+        return s;
+    }
 }
 
